@@ -7,15 +7,10 @@ using UnityEngine;
 public class PatCreator : MonoBehaviour
 {
     private LineRenderer _lineRenderer;
+    private bool _isTrue;
+    private Vector3 _lastHitPos= Vector3.zero;
     private List<Vector3> points = new List<Vector3>();
-    public Camera camera;
     
-    // robot Move
-    [SerializeField] private float robotSpeed;
-    private Vector3 target;
-    private int wavepointIndex = 0;
-    private bool moveStart;
-
     void Awake()
     {
         _lineRenderer = GetComponent<LineRenderer>();
@@ -23,69 +18,43 @@ public class PatCreator : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            points.Clear();
-        }
+        #region MouseInput
 
-        if (Input.GetMouseButton(0))
+        if (!_isTrue)
         {
-            Draw();
-        }
-        if (Input.GetMouseButtonUp(0))
-        {
-            moveStart = true;
-            target = points[0];
-            
-            for (int i = 0; i < points.Count; i++)
+            //The list in Robot Controller is cleared 
+            if (Input.GetMouseButtonDown(0))
+                RobotController.instance.StopRobot();
+        
+            if (Input.GetMouseButton(0))
+                Drawing();
+           
+            if (Input.GetMouseButtonUp(0))
             {
-                //Debug.Log("konum = " + points[i]);
+                RobotController.instance.SetRobotPath(points);
+                RobotController.instance.StartMoving(); 
+                _isTrue = true;
             }
         }
-        if (moveStart)
-        {
-            Move();
-        }
+        
+        #endregion
     }
 
-    void Draw()
+    void Drawing()
     {
-        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
-        if (Physics.Raycast(ray, out hitInfo,1000))
+        if (Physics.Raycast(ray, out hitInfo,100))
         {
-            Vector3 newPosition = hitInfo.point;
-            newPosition.y = 0.4f;
-            points.Add(newPosition);
-            _lineRenderer.positionCount = points.Count;
-            _lineRenderer.SetPositions(points.ToArray());
+            if ((hitInfo.point - _lastHitPos).magnitude > 0.6f)
+            {
+                Vector3 newPosition = hitInfo.point;
+                newPosition.y = 0.4f;
+                points.Add(newPosition);
+                _lineRenderer.positionCount = points.Count;
+                _lineRenderer.SetPositions(points.ToArray());
+                _lastHitPos = newPosition;
+            }
         }
-    }
-
-    void Move()
-    {
-        Vector3 dir = target - transform.position;
-        transform.Translate(dir.normalized*robotSpeed*Time.deltaTime,Space.World );
-        if (Vector3.Distance(transform.position, target) <= 0.4f)
-        {
-            GetNextPoint();
-        }
-        transform.LookAt(target);
-    }
-    
-    void GetNextPoint()
-    {
-        if(wavepointIndex>=points.Count-1)
-        {
-            EntPoint();
-            return;
-        }
-        wavepointIndex++;
-        target = points[wavepointIndex];
-    }
-    void EntPoint()
-    {
-        moveStart = false;
-       Debug.Log("Sona ulaştı");
     }
 }

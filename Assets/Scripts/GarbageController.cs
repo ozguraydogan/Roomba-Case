@@ -7,6 +7,13 @@ using DG.Tweening;
 public class GarbageController : MonoBehaviour
 {
     private Vector3 target;
+    private float pullingSpeed;
+
+    private void Start()
+    {
+        pullingSpeed = RobotController.instance.RobotSpeed /100;
+    }
+
     private void Update()
     {
         if (Vector3.Distance(transform.position, target) <= 0.1f)
@@ -19,8 +26,8 @@ public class GarbageController : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("toplandı");
-            transform.DOMove(other.transform.position,0.2f);
+            Debug.Log("collected");
+            transform.DOMove(other.transform.position,pullingSpeed);
             target = other.transform.position;
             
         }
