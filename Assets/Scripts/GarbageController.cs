@@ -6,17 +6,17 @@ using DG.Tweening;
 
 public class GarbageController : MonoBehaviour
 {
-    private Vector3 target;
-    private float pullingSpeed;
+    private Vector3 _target;
+    private float _pullingSpeed;
 
     private void Start()
     {
-        pullingSpeed = RobotController.instance.RobotSpeed /100;
+        _pullingSpeed = RobotController.instance.RobotSpeed /100;
     }
 
     private void Update()
     {
-        if (Vector3.Distance(transform.position, target) <= 0.1f)
+        if (Vector3.Distance(transform.position, _target) <= 0.1f)
         {
             Destroy(this.gameObject);
         }
@@ -26,10 +26,9 @@ public class GarbageController : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("collected");
-            transform.DOMove(other.transform.position,pullingSpeed);
-            target = other.transform.position;
-            
+            transform.DOMove(other.transform.position,_pullingSpeed);
+            _target = other.transform.position;
         }
     }
 }
+

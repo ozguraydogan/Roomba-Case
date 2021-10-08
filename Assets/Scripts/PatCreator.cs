@@ -9,11 +9,17 @@ public class PatCreator : MonoBehaviour
     private LineRenderer _lineRenderer;
     private bool _isTrue;
     private Vector3 _lastHitPos= Vector3.zero;
-    private List<Vector3> points = new List<Vector3>();
+    private List<Vector3> _points = new List<Vector3>();
+    private Camera _camera;
     
     void Awake()
     {
         _lineRenderer = GetComponent<LineRenderer>();
+    }
+
+    private void Start()
+    {
+        _camera = Camera.main;
     }
 
     void Update()
@@ -31,7 +37,7 @@ public class PatCreator : MonoBehaviour
            
             if (Input.GetMouseButtonUp(0))
             {
-                RobotController.instance.SetRobotPath(points);
+                RobotController.instance.SetRobotPath(_points);
                 RobotController.instance.StartMoving(); 
                 _isTrue = true;
             }
@@ -42,19 +48,23 @@ public class PatCreator : MonoBehaviour
 
     void Drawing()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hitInfo;
-        if (Physics.Raycast(ray, out hitInfo,100))
-        {
-            if ((hitInfo.point - _lastHitPos).magnitude > 0.6f)
+        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hitInfo;
+            
+            if (Physics.Raycast(ray, out hitInfo,100))
             {
-                Vector3 newPosition = hitInfo.point;
-                newPosition.y = 0.4f;
-                points.Add(newPosition);
-                _lineRenderer.positionCount = points.Count;
-                _lineRenderer.SetPositions(points.ToArray());
-                _lastHitPos = newPosition;
+                if ((hitInfo.point - _lastHitPos).magnitude > 0.6f)
+                {
+                    Vector3 newPosition = hitInfo.point;
+                    
+                    newPosition.y = 0.4f;
+                    _points.Add(newPosition);
+                    
+                    _lineRenderer.positionCount = _points.Count;
+                    _lineRenderer.SetPositions(_points.ToArray());
+                    _lastHitPos = newPosition;
+                }
             }
-        }
+            
     }
 }

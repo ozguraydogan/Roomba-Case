@@ -8,10 +8,28 @@ public class RobotController : MonoBehaviour
 {
     public static RobotController instance;
     
-    public void SetRobotPath(List<Vector3> _points)
+    //Robot shooting distance
+    [SerializeField] private float _robotSuckDistance;
+    private SphereCollider _collider;
+
+    //LineRenderer path list
+    private List<Vector3> _points = new List<Vector3>();
+
+    // robot movement speed
+    [SerializeField] private float robotSpeed;
+    private Vector3 _target;
+    private int _wavepointIndex = 0;
+    private bool _moveStart = false;
+    
+    public float RobotSpeed
     {
-        points = _points;
-        target = _points[0];
+        get => robotSpeed;
+    }
+    
+    public void SetRobotPath(List<Vector3> pts)
+    {
+        _points = pts; 
+        _target = _points[0];
     }
 
     public void StartMoving()
@@ -21,28 +39,9 @@ public class RobotController : MonoBehaviour
 
     public void StopRobot()
     {
-        points.Clear();
+        _points.Clear();
     }
 
-    public float RobotSpeed
-    {
-        get { return robotSpeed; }
-    }
-
-
-    //Robot shooting distance
-    [SerializeField] private float robotCekimMesafesi;
-    private SphereCollider _collider;
-
-    //LineRenderer path list
-    List<Vector3> points = new List<Vector3>();
-
-    // robot Move
-    [SerializeField] private float robotSpeed;
-    private Vector3 target;
-    private int _wavepointIndex = 0;
-    private bool _moveStart = false;
-    
     private void Awake()
     {
         if (instance == null)
@@ -54,8 +53,8 @@ public class RobotController : MonoBehaviour
         #region RobotShootingDistance
 
         _collider = GetComponent<SphereCollider>();
-        _collider.radius = robotCekimMesafesi;
-
+        _collider.radius = _robotSuckDistance;
+        
         #endregion
     }
 
@@ -72,41 +71,46 @@ public class RobotController : MonoBehaviour
         if (other.CompareTag("Obstacle"))
         {
             //If it hits an obstacle, the explosion effect will be active and robot stop 
-            this.transform.GetChild(2).gameObject.SetActive(true);
-            this.transform.GetChild(1).gameObject.SetActive(false);
-            
+            transform.GetChild(2).gameObject.SetActive(true);
+            transform.GetChild(1).gameObject.SetActive(false);
+            //movement stop
             _moveStart = false;
         }
     }
 
+    #region RobotMoving
     private void Move()
     {
-        Vector3 dir = target - transform.position;
+        
+        Vector3 dir = _target - transform.position;
         transform.Translate(dir.normalized * robotSpeed * Time.deltaTime, Space.World);
-        if (Vector3.Distance(transform.position, target) <= 0.4f)
+        //distance control
+        if (Vector3.Distance(transform.position, _target) <= 0.4f)
         {
             GetNextPoint();
         }
 
-        transform.LookAt(target);
+        transform.LookAt(_target);
     }
 
     private void GetNextPoint()
     {
-        if (_wavepointIndex >= points.Count - 1)
+        if (_wavepointIndex >= _points.Count - 1)
         {
             EndPoint();
             return;
         }
 
         _wavepointIndex++;
-        target = points[_wavepointIndex];
+        _target = _points[_wavepointIndex];
     }
 
     private void EndPoint()
     {
         _moveStart = false;
     }
+    #endregion
+
 
     private void RunRobotParticle()
     {
